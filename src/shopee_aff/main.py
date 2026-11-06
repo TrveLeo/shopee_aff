@@ -1,5 +1,5 @@
 """Pick best unposted product -> caption -> Instagram -> update link-in-bio page."""
-import html, json, os, pathlib, sys
+import html, json, os, pathlib, sys, time
 
 from . import instagram, shopee
 
@@ -8,6 +8,7 @@ STATE = ROOT / "data" / "posted.json"
 SITE = ROOT / "site" / "index.html"
 MIN_COMMISSION = 0.08  # 8%
 MIN_RATING = 4.5
+MIN_SALES = 50  # social proof; sortType=commission returns lots of 0-sales junk
 MIN_PRICE, MAX_PRICE = 10, 120  # impulse-buy range (R$)
 CAT_ID = int(os.environ.get("SHOPEE_CAT_ID") or 0)  # optional: Home & Living category id
 # niche: casa & cozinha. One keyword per run, rotated by day/slot.
@@ -25,15 +26,19 @@ def load() -> list[dict]:
 
 
 def pick(posted_ids: set[str]) -> dict | None:
-    import time
     kw = KEYWORDS[int(time.time() // 43200) % len(KEYWORDS)]
     print("keyword:", kw)
+    raw = {}
+    for sort in (shopee.SORT_SALES, shopee.SORT_COMMISSION):
+        for p in shopee.top_products(50, keyword=kw, cat_id=CAT_ID, sort=sort):
+            raw[p["itemId"]] = p
     cands = [
-        p for p in shopee.top_products(50, keyword=kw, cat_id=CAT_ID)
+        p for p in raw.values()
         if str(p["itemId"]) not in posted_ids
         and float(p.get("commissionRate") or 0) >= MIN_COMMISSION
         and float(p.get("ratingStar") or 0) >= MIN_RATING
         and p.get("imageUrl")
+        and int(p.get("sales") or 0) >= MIN_SALES
         and MIN_PRICE <= float(p.get("priceMin") or 0) <= MAX_PRICE
     ]
     cands.sort(key=lambda p: float(p["commissionRate"]) * float(p["priceMin"] or 0), reverse=True)
@@ -71,13 +76,15 @@ def main() -> int:
     p = pick({i["id"] for i in items})
     if not p:
         print("no candidate"); return 0
-    link = shopee.short_link(p["offerLink"] or p["productLink"])
+    sub_id = f"ig{time.strftime('%y%m%d%H')}x{p['itemId']}"  # one subId per post -> per-post sales
+    link = shopee.short_link(p["productLink"], sub_id)
     cap = caption(p, link)
     print(cap, link, p["imageUrl"], sep="\n")
     if dry:
         return 0
     instagram.publish_image(p["imageUrl"], cap)
-    items.append({"id": str(p["itemId"]), "name": p["productName"], "image": p["imageUrl"], "link": link})
+    items.append({"id": str(p["itemId"]), "name": p["productName"], "image": p["imageUrl"], "link": link, "sub_id": sub_id, "ts": int(time.time()),
+                  "commission": p["commissionRate"], "price": p["priceMin"]})
     STATE.write_text(json.dumps(items, ensure_ascii=False, indent=1))
     render_site(items)
     return 0

@@ -18,3 +18,11 @@ Casa & cozinha, R$10-120, rating>=4.5, commission>=8%. Edit `KEYWORDS` in `main.
 
 ## Instagram prereqs
 Business/Creator account linked to a Facebook Page, Meta developer app, long-lived token (~60d, refresh needed).
+
+## Sales per post
+Each post gets its own Shopee `subId` (`ig<yymmddhh>x<itemId>`), saved in `data/posted.json`.
+`PYTHONPATH=src python -m shopee_aff.report [days]` joins it with `conversionReport` -> commission per post.
+
+## API notes (verified)
+sortType: 1 relevance, 2 sales, 3 price desc, 4 price asc, 5 commission. `productCatId` is `Int`.
+API returns intermittent `System Error 10000` -> `_call` retries with backoff.
