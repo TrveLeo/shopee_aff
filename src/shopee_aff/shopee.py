@@ -27,10 +27,10 @@ def _call(query: str, variables: dict | None = None) -> dict:
 def top_products(limit: int = 30, page: int = 1, keyword: str = "", cat_id: int = 0) -> list[dict]:
     # sortType 2 = sales; listType 0 = all. Adjust in Shopee docs if needed.
     q = """
-    query($limit:Int,$page:Int,$kw:String,$cat:Int64){
+    query($limit:Int,$page:Int,$kw:String,$cat:Int){
       productOfferV2(sortType:2, listType:0, limit:$limit, page:$page, keyword:$kw, productCatId:$cat){
         nodes{ itemId productName imageUrl priceMin priceMax commissionRate
-               ratingStar sales shopName productLink offerLink }
+               ratingStar sales shopName productLink offerLink productCatIds priceDiscountRate commission }
       }
     }"""
     v = {"limit": limit, "page": page}

@@ -9,7 +9,7 @@ SITE = ROOT / "site" / "index.html"
 MIN_COMMISSION = 0.08  # 8%
 MIN_RATING = 4.5
 MIN_PRICE, MAX_PRICE = 10, 120  # impulse-buy range (R$)
-CAT_ID = int(os.environ.get("SHOPEE_CAT_ID", "0"))  # optional: Home & Living category id
+CAT_ID = int(os.environ.get("SHOPEE_CAT_ID") or 0)  # optional: Home & Living category id
 # niche: casa & cozinha. One keyword per run, rotated by day/slot.
 KEYWORDS = [
     "organizador cozinha", "porta temperos", "utensilios cozinha silicone", "pote hermetico",
