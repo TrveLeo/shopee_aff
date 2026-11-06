@@ -24,16 +24,21 @@ def _call(query: str, variables: dict | None = None) -> dict:
     return out["data"]
 
 
-def top_products(limit: int = 30, page: int = 1) -> list[dict]:
+def top_products(limit: int = 30, page: int = 1, keyword: str = "", cat_id: int = 0) -> list[dict]:
     # sortType 2 = sales; listType 0 = all. Adjust in Shopee docs if needed.
     q = """
-    query($limit:Int,$page:Int){
-      productOfferV2(sortType:2, listType:0, limit:$limit, page:$page){
+    query($limit:Int,$page:Int,$kw:String,$cat:Int64){
+      productOfferV2(sortType:2, listType:0, limit:$limit, page:$page, keyword:$kw, productCatId:$cat){
         nodes{ itemId productName imageUrl priceMin priceMax commissionRate
                ratingStar sales shopName productLink offerLink }
       }
     }"""
-    return _call(q, {"limit": limit, "page": page})["productOfferV2"]["nodes"]
+    v = {"limit": limit, "page": page}
+    if keyword:
+        v["kw"] = keyword
+    if cat_id:
+        v["cat"] = cat_id
+    return _call(q, v)["productOfferV2"]["nodes"]
 
 
 def short_link(origin_url: str, sub_id: str = "ig") -> str:
