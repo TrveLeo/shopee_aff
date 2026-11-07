@@ -17,11 +17,11 @@ Casa & cozinha, R$10-120, rating>=4.5, commission>=8%. Edit `KEYWORDS` in `main.
 4. Local test: `cp .env.example .env; set -a; . ./.env; set +a; PYTHONPATH=src python -m shopee_aff.main`
 
 ## Instagram prereqs
-Separate IG account from `TrveLeo/religious` (devotional, non-commercial). Uses Instagram Login API (`graph.instagram.com`), no Facebook Page.
-1. New IG account -> switch to Professional (Creator/Business)
-2. Meta app (existing one from `religious` or new): add account as Instagram Tester, accept invite in IG app
-3. App dashboard > Instagram > API setup > generate token for the account -> `IG_ACCESS_TOKEN`, `IG_USER_ID`
-4. Token ~60d: `shopee_aff.instagram.refresh_token()` renews it
+Reuses the Devocional Diario account + Meta app from `TrveLeo/religious` (Instagram Login API, `graph.instagram.com`, no FB Page).
+The `religious` workflows are **disabled** (re-enable: `gh workflow enable <file> -R TrveLeo/religious`). Its Cloudflare webhook ("amem" replies) is separate and still deployed.
+- Copy `IG_ACCESS_TOKEN` + `IG_USER_ID` from `religious` into `.env` and this repo's Actions secrets (values are not readable via API)
+- Token ~60d: `shopee_aff.instagram.refresh_token()` renews it. Do not run two repos on the same token.
+- Bio link -> https://trveleo.github.io/shopee_aff/ (manual, IG API cannot edit bio)
 
 ## Sales per post
 Each post gets its own Shopee `subId` (`ig<yymmddhh>x<itemId>`), saved in `data/posted.json`.
