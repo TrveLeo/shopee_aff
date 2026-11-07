@@ -1,7 +1,8 @@
-"""Instagram Graph API publishing. Needs IG business/creator account + FB page + long-lived token."""
+"""Instagram publishing via Instagram Login API (graph.instagram.com) - same flow as the `religious` repo.
+No Facebook Page needed. Needs professional IG account + token with instagram_business_content_publish."""
 import json, os, time, urllib.parse, urllib.request
 
-G = "https://graph.facebook.com/v21.0"
+G = "https://graph.instagram.com/v21.0"
 
 
 def _post(path: str, **params) -> dict:
@@ -25,3 +26,8 @@ def publish_image(image_url: str, caption: str) -> str:
             break
         time.sleep(3)
     return _post(f"{uid}/media_publish", creation_id=cid)["id"]
+
+
+def refresh_token() -> dict:
+    """Long-lived token lasts ~60d; refresh (allowed after 24h old) returns a new 60d token."""
+    return _get("refresh_access_token", grant_type="ig_refresh_token")

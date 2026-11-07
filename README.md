@@ -17,7 +17,11 @@ Casa & cozinha, R$10-120, rating>=4.5, commission>=8%. Edit `KEYWORDS` in `main.
 4. Local test: `cp .env.example .env; set -a; . ./.env; set +a; PYTHONPATH=src python -m shopee_aff.main`
 
 ## Instagram prereqs
-Business/Creator account linked to a Facebook Page, Meta developer app, long-lived token (~60d, refresh needed).
+Separate IG account from `TrveLeo/religious` (devotional, non-commercial). Uses Instagram Login API (`graph.instagram.com`), no Facebook Page.
+1. New IG account -> switch to Professional (Creator/Business)
+2. Meta app (existing one from `religious` or new): add account as Instagram Tester, accept invite in IG app
+3. App dashboard > Instagram > API setup > generate token for the account -> `IG_ACCESS_TOKEN`, `IG_USER_ID`
+4. Token ~60d: `shopee_aff.instagram.refresh_token()` renews it
 
 ## Sales per post
 Each post gets its own Shopee `subId` (`ig<yymmddhh>x<itemId>`), saved in `data/posted.json`.
