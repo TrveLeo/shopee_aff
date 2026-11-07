@@ -30,3 +30,8 @@ Each post gets its own Shopee `subId` (`ig<yymmddhh>x<itemId>`), saved in `data/
 ## API notes (verified)
 sortType: 1 relevance, 2 sales, 3 price desc, 4 price asc, 5 commission. `productCatId` is `Int`.
 API returns intermittent `System Error 10000` -> `_call` retries with backoff.
+
+## Token auto-refresh
+`.github/workflows/refresh-token.yml` runs on the 1st and 15th, renews `IG_ACCESS_TOKEN` and rewrites the secret.
+Needs secret `GH_PAT`: fine-grained PAT, only this repo, permission "Secrets: Read and write". If the workflow fails GitHub emails you.
+Only works while the token is still valid - if it ever expires, generate a new one in the Meta dashboard.
