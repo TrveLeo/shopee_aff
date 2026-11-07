@@ -24,4 +24,4 @@ jobs:
           SHOPEE_CAT_ID: ${{ vars.SHOPEE_CAT_ID }}
       - run: |
           git config user.name "bot"; git config user.email "bot@users.noreply.github.com"
-          git add data site && (git diff --cached --quiet || git commit -m "post" && git push)
+          git add data docs && (git diff --cached --quiet || git commit -m "post" && git push)

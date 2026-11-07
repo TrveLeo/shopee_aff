@@ -1,11 +1,10 @@
 """Pick best unposted product -> caption -> Instagram -> update link-in-bio page."""
-import html, json, os, pathlib, sys, time
+import json, os, pathlib, sys, time
 
-from . import instagram, shopee
+from . import instagram, shopee, site
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 STATE = ROOT / "data" / "posted.json"
-SITE = ROOT / "site" / "index.html"
 MIN_COMMISSION = 0.08  # 8%
 MIN_RATING = 4.5
 MIN_SALES = 50  # social proof; sortType=commission returns lots of 0-sales junk
@@ -55,21 +54,6 @@ def caption(p: dict, link: str) -> str:
     )
 
 
-def render_site(items: list[dict]) -> None:
-    rows = "\n".join(
-        f'<a class="c" href="{html.escape(i["link"])}" rel="sponsored nofollow">'
-        f'<img src="{html.escape(i["image"])}" loading="lazy"><span>{html.escape(i["name"][:80])}</span></a>'
-        for i in reversed(items[-30:])
-    )
-    SITE.write_text(
-        '<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">'
-        "<title>Achadinhos</title><style>body{font:16px system-ui;max-width:480px;margin:auto;padding:16px}"
-        ".c{display:flex;gap:12px;align-items:center;margin:12px 0;color:inherit;text-decoration:none}"
-        ".c img{width:80px;height:80px;object-fit:cover;border-radius:8px}</style>"
-        f"<h1>Achadinhos p/ Casa & Cozinha</h1>{rows}"
-    )
-
-
 def main() -> int:
     dry = os.environ.get("DRY_RUN", "1") == "1"
     items = load()
@@ -84,9 +68,10 @@ def main() -> int:
         return 0
     instagram.publish_image(p["imageUrl"], cap)
     items.append({"id": str(p["itemId"]), "name": p["productName"], "image": p["imageUrl"], "link": link, "sub_id": sub_id, "ts": int(time.time()),
-                  "commission": p["commissionRate"], "price": p["priceMin"]})
+                  "commission": p["commissionRate"], "price": p["priceMin"],
+                  "discount": p.get("priceDiscountRate") or 0, "rating": p["ratingStar"], "sales": p["sales"]})
     STATE.write_text(json.dumps(items, ensure_ascii=False, indent=1))
-    render_site(items)
+    site.render(items)
     return 0
 
 
