@@ -11,8 +11,8 @@ Shopee affiliate products -> Instagram, plus original listing video preparation 
 ## Vídeos dos próprios anúncios
 
 Esta etapa **prepara a fila e os arquivos**; não publica vídeos na Shopee nem no Instagram.
-O envio será conectado depois de verificar os recursos disponíveis na conta. Nenhuma API pública de
-publicação no Shopee Vídeo foi confirmada para esta integração.
+O envio nativo ainda não está implementado. A Shopee documenta uma Video Open API com publicação e
+vinculação de produtos; o acesso da conta deste projeto ainda precisa ser verificado (veja abaixo).
 
 O fluxo seleciona ofertas usando os filtros do projeto, identifica o anúncio por `shopId` + `itemId`,
 procura o vídeo original em metadados públicos da página e baixa a mídia do CDN da Shopee.
@@ -135,6 +135,32 @@ O cron de preparo só executa se a variável do repositório `VIDEO_PREPARE_ENAB
 os horários são 09h e 18h na Bahia. Por padrão permanece desativado.
 Os workflows de imagens e vídeos compartilham uma fila de execução para evitar gravações concorrentes no Git.
 Alterações locais na fila/fontes precisam ser commitadas e enviadas antes de serem usadas no Actions.
+
+### Canal oficial para publicação: acesso pendente
+
+Pesquisa de documentação pública em 18/11/2026:
+
+- A [Shopee Video Open API](https://open.shopee.com/announcements/1293) permite upload, edição,
+  publicação e consulta de vídeos. Exige um app do tipo **Shopee Video Management**.
+- O [guia de integração](https://open.shopee.com/developer-guide/706) prevê afiliados com
+  `auth_type=user`. As chamadas usam `user_id` e `access_token`, com assinatura baseada no usuário.
+  Tokens e renovação são gerenciados por usuário; esse fluxo ainda não está implementado aqui.
+- O fluxo oficial é: iniciar upload, enviar partes, concluir, aguardar processamento, escolher capa,
+  configurar legenda e produtos em `v2.video.edit_video_info` e publicar com `v2.video.post_video`.
+- A [documentação de publicação](https://open.shopee.com/documents/v2/v2.video.post_video?module=129&type=1)
+  lista o endereço brasileiro `https://openplatform.shopee.com.br/api/v2/video/post_video`.
+  Isso documenta o canal regional; não comprova habilitação da nossa conta.
+- A [FAQ de criação de apps](https://open.shopee.com/faq?categoryId=2012) informa que os tipos de app
+  disponíveis dependem do tipo da conta de desenvolvedor. É necessário inspecionar o console autenticado.
+- O guia também exige aceite dos termos de Shopee Video no Seller Center. Ainda é preciso confirmar
+  como esse requisito aparece no fluxo da nossa conta de afiliado.
+
+Próxima verificação: acessar o [console oficial](https://open.shopee.com/console?from=header),
+conferir cadastro de desenvolvedor, disponibilidade de **Shopee Video Management**, permissões e
+ambiente do app; depois autorizar a conta de afiliado e validar uma consulta de vídeos sem publicação.
+O projeto usa atualmente a Affiliate GraphQL API para ofertas e links. As credenciais existentes
+`SHOPEE_APP_ID`/`SHOPEE_SECRET` não foram validadas como credenciais da Video Open API.
+Nenhuma autorização de usuário nem chamada autenticada à API de vídeo foi concluída nesta etapa.
 
 ### Produto de controle da validação real
 
