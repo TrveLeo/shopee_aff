@@ -1,0 +1,93 @@
+name: prepare-product-videos
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: Maximum number of videos to prepare
+        type: number
+        default: 3
+      retry:
+        description: Retry products with blocked/interrupted preparation
+        type: boolean
+        default: false
+      require_ready:
+        description: Fail validation if no real video package is prepared
+        type: boolean
+        default: true
+      product_url:
+        description: Optional exact product URL (explicit selection bypasses automatic niche filters)
+        type: string
+        default: ""
+  schedule:
+    - cron: "0 12,21 * * *" # 09:00 and 18:00 Bahia; enable with VIDEO_PREPARE_ENABLED=true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: shopee-repository-state
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: github.event_name == 'workflow_dispatch' || vars.VIDEO_PREPARE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check FFmpeg
+        run: |
+          if ! command -v ffmpeg || ! command -v ffprobe; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends ffmpeg
+          fi
+      - name: Prepare original listing videos
+        id: prepare
+        env:
+          PYTHONPATH: src
+          SHOPEE_APP_ID: ${{ secrets.SHOPEE_APP_ID }}
+          SHOPEE_SECRET: ${{ secrets.SHOPEE_SECRET }}
+          SHOPEE_CAT_ID: ${{ vars.SHOPEE_CAT_ID }}
+          VIDEO_LIMIT: ${{ inputs.limit || '3' }}
+          VIDEO_RETRY: ${{ inputs.retry || 'false' }}
+          VIDEO_REQUIRE_READY: ${{ github.event_name == 'workflow_dispatch' && inputs.require_ready }}
+          VIDEO_PRODUCT_URL: ${{ inputs.product_url }}
+        run: |
+          args=(prepare --limit "$VIDEO_LIMIT" --scan-limit 15)
+          if [ "$VIDEO_RETRY" = "true" ]; then args+=(--retry); fi
+          if [ "$VIDEO_REQUIRE_READY" = "true" ]; then args+=(--require-ready); fi
+          if [ -n "$VIDEO_PRODUCT_URL" ]; then args+=(--product-url "$VIDEO_PRODUCT_URL"); fi
+          python -m shopee_aff.videos "${args[@]}"
+          python -m shopee_aff.videos status >> "$GITHUB_STEP_SUMMARY"
+      - name: Verify upload packages
+        env:
+          PYTHONPATH: src
+          VIDEO_REQUIRE_READY: ${{ github.event_name == 'workflow_dispatch' && inputs.require_ready }}
+        run: |
+          args=(verify)
+          if [ "$VIDEO_REQUIRE_READY" != "true" ]; then args+=(--allow-empty); fi
+          python -m shopee_aff.videos "${args[@]}"
+      - name: Save upload packages
+        id: upload
+        if: always() && steps.prepare.outcome != '' && steps.prepare.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: shopee-video-packages-${{ github.run_id }}
+          path: |
+            artifacts/videos/
+            data/video_queue.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Persist preparation queue
+        if: always() && steps.upload.outcome == 'success'
+        run: |
+          git config user.name "bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/video_queue.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Update product video preparation queue"
+          git push

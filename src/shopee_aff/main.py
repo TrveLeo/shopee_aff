@@ -24,7 +24,7 @@ def load() -> list[dict]:
     return json.loads(STATE.read_text()) if STATE.exists() else []
 
 
-def pick(posted_ids: set[str]) -> dict | None:
+def candidates(posted_ids: set[str]) -> list[dict]:
     kw = KEYWORDS[int(time.time() // 43200) % len(KEYWORDS)]
     print("keyword:", kw)
     raw = {}
@@ -41,7 +41,12 @@ def pick(posted_ids: set[str]) -> dict | None:
         and MIN_PRICE <= float(p.get("priceMin") or 0) <= MAX_PRICE
     ]
     cands.sort(key=lambda p: float(p["commissionRate"]) * float(p["priceMin"] or 0), reverse=True)
-    return cands[0] if cands else None
+    return cands
+
+
+def pick(posted_ids: set[str]) -> dict | None:
+    products = candidates(posted_ids)
+    return products[0] if products else None
 
 
 def caption(p: dict, link: str) -> str:

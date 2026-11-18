@@ -38,22 +38,35 @@ def _call_once(query: str, variables: dict | None = None) -> dict:
 
 SORT_RELEVANCE, SORT_SALES, SORT_PRICE_DESC, SORT_PRICE_ASC, SORT_COMMISSION = 1, 2, 3, 4, 5
 
+PRODUCT_FIELDS = """itemId shopId productName imageUrl priceMin priceMax commissionRate
+                    ratingStar sales shopName productLink offerLink productCatIds priceDiscountRate commission"""
+
 
 def top_products(limit: int = 30, page: int = 1, keyword: str = "", cat_id: int = 0,
                  sort: int = SORT_SALES) -> list[dict]:
     q = """
     query($limit:Int,$page:Int,$kw:String,$cat:Int,$sort:Int){
       productOfferV2(sortType:$sort, listType:0, limit:$limit, page:$page, keyword:$kw, productCatId:$cat){
-        nodes{ itemId productName imageUrl priceMin priceMax commissionRate
-               ratingStar sales shopName productLink offerLink productCatIds priceDiscountRate commission }
+        nodes{ __PRODUCT_FIELDS__ }
       }
     }"""
+    q = q.replace("__PRODUCT_FIELDS__", PRODUCT_FIELDS)
     v = {"limit": limit, "page": page, "sort": sort}
     if keyword:
         v["kw"] = keyword
     if cat_id:
         v["cat"] = cat_id
     return _call(q, v)["productOfferV2"]["nodes"]
+
+
+def product_offer(shop_id: int, item_id: int) -> dict | None:
+    """Look up an explicitly selected product; automatic niche filters do not apply."""
+    if shop_id <= 0 or item_id <= 0:
+        raise ValueError("Product IDs must be positive integers.")
+    query = (f"{{ productOfferV2(shopId:{int(shop_id)},itemId:{int(item_id)},limit:1){{"
+             "nodes{" + PRODUCT_FIELDS + "} } }")
+    nodes = _call(query)["productOfferV2"]["nodes"]
+    return next((p for p in nodes if str(p["shopId"]) == str(shop_id) and str(p["itemId"]) == str(item_id)), None)
 
 
 def short_link(origin_url: str, sub_id: str = "ig") -> str:
