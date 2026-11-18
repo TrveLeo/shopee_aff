@@ -1,4 +1,68 @@
 {
   "version": 1,
-  "jobs": []
+  "jobs": [
+    {
+      "id": "sv-1372532408-22293490123",
+      "channel": "shopee_video",
+      "item_id": "22293490123",
+      "shop_id": "1372532408",
+      "product_url": "https://shopee.com.br/product/1372532408/22293490123",
+      "sub_id": "sv1372532408x22293490123",
+      "product": {
+        "itemId": 22293490123,
+        "shopId": 1372532408,
+        "productName": "Celular IPhone 13 / 13 Pro/ 13 Pro Max 128gb Com",
+        "imageUrl": "https://cf.shopee.com.br/file/br-11134207-820ln-mqa8yh9yvbwid9",
+        "priceMin": "2299.99",
+        "priceMax": "3386",
+        "commissionRate": "0.03",
+        "ratingStar": "4.8",
+        "sales": 233,
+        "shopName": "ABC3434",
+        "productLink": "https://shopee.com.br/product/1372532408/22293490123",
+        "offerLink": "https://s.shopee.com.br/7putT1PA2R",
+        "productCatIds": [
+          100013,
+          100073,
+          0
+        ],
+        "priceDiscountRate": 49,
+        "commission": "68.9997"
+      },
+      "created_at": "2026-11-18T15:30:48+00:00",
+      "attempts": 1,
+      "status": "ready",
+      "updated_at": "2026-11-18T15:30:57+00:00",
+      "source": {
+        "product_url": "https://shopee.com.br/product/1372532408/22293490123",
+        "video_url": "https://mms.vod.susercontent.com/api/v4/11110105/mms/br-11110105-6kfko-m6fv71kcdug776.default.mp4",
+        "method": "registered_listing",
+        "rights_reference": "",
+        "evidence_url": "https://apify.com/zen-studio/shopee-product-scraper"
+      },
+      "media": {
+        "original": {
+          "duration": 34.04,
+          "width": 960,
+          "height": 540,
+          "codec": "h264",
+          "audio": true
+        },
+        "prepared": {
+          "duration": 34.033333,
+          "width": 1080,
+          "height": 1920,
+          "codec": "h264",
+          "audio": true
+        },
+        "sha256": "b771666d6ec9395d5873938c71dd5d020d163edb708af1561765e9016f92a7d2",
+        "original_sha256": "79afc5420b763949e1e0a972fb55a4a71eed26aa2445c83ef002414ab1d18d0e",
+        "bytes": 2167945,
+        "trimmed": false
+      },
+      "affiliate_link": "https://s.shopee.com.br/7AfDzh8mOF",
+      "error": null,
+      "artifact_run_id": "44336390888"
+    }
+  ]
 }
